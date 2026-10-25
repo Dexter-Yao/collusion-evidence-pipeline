@@ -25,4 +25,6 @@ pytest tests/ -v
 
 **All numbers in `results/fake_debug/` come from synthetic data built with obvious separation. They verify the pipeline. They are not evidence about any real detector.**
 
-**Reused vs new:** see `docs/NOTICE_REUSED_VS_NEW.md`. **Limitations and dual-use:** see `docs/LIMITATIONS_AND_DUAL_USE.md`. **Report:** [link when submitted]. **Team and roles:** `docs/CONTRIBUTIONS.md`.
+## Author Contributions
+
+To be confirmed with each person before submission. 
