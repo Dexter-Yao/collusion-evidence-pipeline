@@ -1,0 +1,18 @@
+{
+  "gap": {
+    "talk_threshold": 1.7493165008476004,
+    "behaviour_threshold": 0.3383896568900793,
+    "talk_higher_is_suspicious": true,
+    "behaviour_higher_is_suspicious": true,
+    "threshold_method": "gap",
+    "seed": 2026
+  },
+  "percentile": {
+    "talk_threshold": 2.387489963746051,
+    "behaviour_threshold": 2.6051681081268336,
+    "talk_higher_is_suspicious": true,
+    "behaviour_higher_is_suspicious": true,
+    "threshold_method": "percentile",
+    "seed": 2026
+  }
+}
