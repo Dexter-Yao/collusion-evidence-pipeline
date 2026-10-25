@@ -1,4 +1,4 @@
-## Collusion evidence pipeline (Apart AI Collusion Sprint, question 2.3)
+## Collusion evidence pipeline (Apart AI Collusion Sprint, track 2.3)
 
 **Status: unfinished work.** This repo contains an evaluation pipeline verified on synthetic data, plus an audit of what starter environments can and cannot establish about agent coordination. It contains **no results on real agent logs.**
 
