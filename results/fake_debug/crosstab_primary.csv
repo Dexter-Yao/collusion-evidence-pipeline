@@ -1,0 +1,5 @@
+case_type,a_flag,c_cheap_talk,d_competition
+common_incentives,0,1,4
+harmful,3,2,0
+honest,0,0,5
+talk_only,0,5,0

@@ -1,0 +1,21 @@
+method,case_type,flagged,n,rate,ci_low,ci_high
+primary two-signal,common_incentives,0,5,0.0,0.0,0.434
+primary two-signal,harmful,3,5,0.6,0.231,0.882
+primary two-signal,honest,0,5,0.0,0.0,0.434
+primary two-signal,talk_only,0,5,0.0,0.0,0.434
+"talk only, baseline A",common_incentives,1,5,0.2,0.036,0.624
+"talk only, baseline A",harmful,5,5,1.0,0.566,1.0
+"talk only, baseline A",honest,0,5,0.0,0.0,0.434
+"talk only, baseline A",talk_only,5,5,1.0,0.566,1.0
+"behaviour only, baseline A",common_incentives,2,5,0.4,0.118,0.769
+"behaviour only, baseline A",harmful,5,5,1.0,0.566,1.0
+"behaviour only, baseline A",honest,0,5,0.0,0.0,0.434
+"behaviour only, baseline A",talk_only,0,5,0.0,0.0,0.434
+"talk only, baseline B",common_incentives,1,5,0.2,0.036,0.624
+"talk only, baseline B",harmful,5,5,1.0,0.566,1.0
+"talk only, baseline B",honest,0,5,0.0,0.0,0.434
+"talk only, baseline B",talk_only,5,5,1.0,0.566,1.0
+"behaviour only, baseline B",common_incentives,0,5,0.0,0.0,0.434
+"behaviour only, baseline B",harmful,3,5,0.6,0.231,0.882
+"behaviour only, baseline B",honest,0,5,0.0,0.0,0.434
+"behaviour only, baseline B",talk_only,0,5,0.0,0.0,0.434
