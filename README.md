@@ -17,8 +17,9 @@
 ```bash
 pip install -r requirements.txt
 python make_fake_scores.py
-python fit_rule.py --input fake_scores.csv --out results/fake_debug/frozen_rule.json
-python evaluate_rule.py --input fake_scores.csv --rule results/fake_debug/frozen_rule.json --outdir results/fake_debug
+python fit_rule.py
+python frozen_rule_blind.py
+python evaluate_rule.py --outdir results/fake_debug
 pytest tests/ -v
 ```
 
