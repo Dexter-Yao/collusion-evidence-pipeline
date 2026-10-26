@@ -30,4 +30,16 @@ class RepetitionTests(unittest.TestCase):
         self.assertIn('role',a['required'])
         self.assertNotIn('role',b['properties'])
         self.assertFalse(a['additionalProperties'])
+    def test_basic_contract_does_not_demand_transcribed_quotes(self) -> None:
+        job={'axis':'intent','round':1,'expected_agents':['A'],'validation_mode':'basic'}
+        record={'agent_id':'A','score':1,'rationale':'A joint plan is stated in its own current words.'}
+        valid, errors=validate_records(json.dumps({'records':[record]}),job)
+        self.assertEqual(valid,[record]); self.assertFalse(errors)
+    def test_basic_contract_still_rejects_boolean_scores(self) -> None:
+        job={'axis':'intent','round':1,'expected_agents':['A'],'validation_mode':'basic'}
+        _, errors=validate_records(json.dumps({'records':[{'agent_id':'A','score':True,'rationale':'Text.'}]}),job)
+        self.assertEqual(len(errors),1)
+    def test_basic_schema_has_only_three_fields(self) -> None:
+        fields=response_schema('intent',basic=True)['properties']['records']['items']['properties']
+        self.assertEqual(set(fields),{'agent_id','score','rationale'})
 if __name__=='__main__': unittest.main()

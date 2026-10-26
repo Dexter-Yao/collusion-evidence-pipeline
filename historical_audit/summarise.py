@@ -41,7 +41,7 @@ def facts(path: Path) -> list[dict[str, Any]]:
         return list(csv.DictReader(handle))
 
 
-def summarise(prepared: Path, judged: Path, output: Path) -> dict[str, Any]:
+def summarise(prepared: Path, judged: Path, output: Path, basic_validation: bool = True) -> dict[str, Any]:
     """Revalidate all receipts and produce full-repetition tables and descriptive summaries."""
     prep = read_json(prepared / "preparation.json")
     profile = read_json(judged / "execution_profile.json")
@@ -56,6 +56,7 @@ def summarise(prepared: Path, judged: Path, output: Path) -> dict[str, Any]:
     receipts = [json.loads(line) for line in (judged / "judge_results.jsonl").read_text().splitlines()]
     seen, scores, raw_scores, errors = set(), {}, {}, []
     status_counts = Counter()
+    receipt_status_counts = Counter()
     quote_failures = Counter()
     for receipt in receipts:
         call_id = receipt.get("call_id", receipt["request_id"])
@@ -68,14 +69,17 @@ def summarise(prepared: Path, judged: Path, output: Path) -> dict[str, Any]:
         if job["request_sha256"] != receipt["request_sha256"]:
             raise ValueError("Receipt belongs to another request")
         repeat = receipt.get("repeat", 1)
-        status_counts[receipt["status"]] += 1
+        receipt_status_counts[receipt["status"]] += 1
         content = receipt.get("content", "")
         if not content and receipt.get("attempts"):
             content = receipt["attempts"][-1].get("response", {}).get("message", {}).get("content", "")
         if receipt["status"] not in ("valid", "partially_valid"):
+            status_counts[receipt["status"]] += 1
             errors.append({"call_id": call_id, "error": receipt.get("error", receipt["status"])})
             continue
-        valid, invalid = validate_records(content, job)
+        validation_job = {**job, "validation_mode": "basic"} if basic_validation else job
+        valid, invalid = validate_records(content, validation_job)
+        status_counts["valid" if not invalid else "partially_valid"] += 1
         for record in json.loads(content)["records"]:
             raw_scores[(job["run_id"], job["round"], record["agent_id"], job["axis"], repeat)] = record
         for record in valid:
@@ -167,7 +171,8 @@ def summarise(prepared: Path, judged: Path, output: Path) -> dict[str, Any]:
             row[axis + "_invalid_or_missing_ratings"] = sum(r[field] == "" for r in repeated)
         row["independent_reference_available"] = False
     summary = {"profile": profile, "planned_calls": len(jobs)*repetitions, "recorded_calls": len(receipts),
-        "call_statuses": dict(status_counts), "unique_seller_round_units": len(source_rows),
+        "call_statuses": dict(status_counts), "original_receipt_statuses": dict(receipt_status_counts),
+        "validation_mode": "basic_reanalysis" if basic_validation else profile.get("validation_mode", "exact_quotes"), "unique_seller_round_units": len(source_rows),
         "planned_axis_ratings": len(source_rows)*2*repetitions, "valid_axis_ratings": len(scores),
         "invalid_record_reasons": dict(quote_failures), "axis_stability": {a: dict(c) for a, c in axis_counts.items()},
         "presence_stability": {a: dict(c) for a, c in presence_counts.items()},
@@ -188,8 +193,9 @@ def main() -> None:
     parser.add_argument("--prepared",type=Path,required=True)
     parser.add_argument("--judged",type=Path,required=True)
     parser.add_argument("--output",type=Path,required=True)
+    parser.add_argument("--strict-quotes",action="store_true",help="Reproduce the retired exact-quotation inclusion rule")
     args=parser.parse_args()
-    print(json.dumps(summarise(args.prepared,args.judged,args.output),ensure_ascii=False,indent=2))
+    print(json.dumps(summarise(args.prepared,args.judged,args.output,not args.strict_quotes),ensure_ascii=False,indent=2))
 
 if __name__ == "__main__":
     main()

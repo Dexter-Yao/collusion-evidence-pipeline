@@ -23,7 +23,7 @@ CLI = "/opt/homebrew/bin/codex"
 MODEL = "gpt-6-luna"
 
 
-def response_schema(axis: str) -> dict[str, Any]:
+def response_schema(axis: str, basic: bool = False) -> dict[str, Any]:
     """Build the strict final-answer contract; evidence text remains independently checked."""
     score = {"anyOf": [{"type": "integer", "enum": [0, 1, 2] if axis == "intent" else [0, 1]},
                        {"type": "string", "enum": ["unknown"]}]}
@@ -32,7 +32,9 @@ def response_schema(axis: str) -> dict[str, Any]:
               "evidence": {"type": "array", "items": {"type": "object", "properties": {
                   "source_id": {"type": "string"}, "quote": {"type": "string"}},
                   "required": ["source_id", "quote"], "additionalProperties": False}}}
-    if axis == "intent":
+    if basic:
+        fields = {key: fields[key] for key in ("agent_id", "score", "rationale")}
+    if axis == "intent" and not basic:
         fields["role"] = {"type": "string", "enum": ["initiator", "responder", "both", "neither", "unknown"]}
     return {"type": "object", "properties": {"records": {"type": "array", "items": {
         "type": "object", "properties": fields, "required": list(fields), "additionalProperties": False}}},
@@ -45,14 +47,24 @@ def validate_records(content: str, job: dict[str, Any]) -> tuple[list[dict[str, 
     if not isinstance(parsed, dict) or not isinstance(parsed.get("records"), list):
         raise ValueError("Missing records array")
     records = parsed["records"]
+    if not all(isinstance(r, dict) for r in records):
+        raise ValueError("Each seller record must be an object")
     ids = [r.get("agent_id") for r in records]
     if len(ids) != len(set(ids)) or set(ids) != set(job["expected_agents"]):
         raise ValueError("Missing, duplicate, or unexpected seller IDs")
     valid, errors = [], []
     for record in records:
         try:
-            one_job = {**job, "expected_agents": [record["agent_id"]]}
-            validate(json.dumps({"records": [record]}), one_job)
+            if job.get("validation_mode") == "basic":
+                allowed = (0, 1, 2) if job["axis"] == "intent" else (0, 1)
+                score = record.get("score")
+                if score != "unknown" and (type(score) is not int or score not in allowed):
+                    raise ValueError("Invalid score type or range")
+                if not isinstance(record.get("rationale"), str) or not record["rationale"].strip():
+                    raise ValueError("Missing concise rationale")
+            else:
+                one_job = {**job, "expected_agents": [record["agent_id"]]}
+                validate(json.dumps({"records": [record]}), one_job)
             valid.append(record)
         except (ValueError, TypeError, KeyError) as exc:
             errors.append({"agent_id": record["agent_id"], "error": str(exc)})
@@ -129,8 +141,8 @@ def run(prepared: Path, output: Path, repeats: int, concurrency: int, limit: int
     """Execute all planned repetitions, resuming completed receipts under an immutable profile."""
     prep = read_json(prepared / "preparation.json")
     for path, key in [(prepared / "judge_requests.jsonl", "requests_sha256"),
-                      (PACKAGE / "pilot.json", "config_sha256"),
-                      (PACKAGE.parent / "docs/auction-process-evaluation.md", "protocol_sha256")]:
+                      ((prepared / "pilot.json") if (prepared / "pilot.json").exists() else PACKAGE / "pilot.json", "config_sha256"),
+                      ((prepared / "protocol.md") if (prepared / "protocol.md").exists() else PACKAGE.parent / "docs/auction-process-evaluation.md", "protocol_sha256")]:
         if sha256(path) != prep[key]:
             raise ValueError(f"Frozen input mismatch: {path.name}")
     version = subprocess.run([CLI, "--version"], text=True, capture_output=True, check=True).stdout.strip()

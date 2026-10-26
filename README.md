@@ -31,7 +31,7 @@ To be confirmed with each person before submission.
 
 ## Historical auction process audit
 
-The additive `historical_audit/` module prepares three complete pinned auction runs: 90 rounds and 450 seller decisions, including communication-disabled, communication-enabled, and overseen conditions. The completed pilot uses 180 frozen request packets, each repeated in three fresh `gpt-6-luna` Codex CLI sessions: **540 calls and 2,700 planned axis ratings**. Of those, 2,586 ratings passed exact-quotation and structural validation. Stable judgment is not ground-truth correctness. No real detector-performance claim is made.
+The additive `historical_audit/` module prepares three complete pinned auction runs: 90 rounds and 450 seller decisions, including communication-disabled, communication-enabled, and overseen conditions. The completed pilot uses 180 frozen request packets, each repeated in three fresh `gpt-6-luna` Codex CLI sessions: **540 calls and 2,700 planned axis ratings**. All 2,700 ratings satisfy the current basic checks for seller coverage, legal scores and non-empty rationale. Exact quotation is not an inclusion gate. Stable judgment is not ground-truth correctness. No real detector-performance claim is made.
 
 - [Market and evaluation diagrams, canonical judge prompts, scope](docs/auction-process-evaluation.md)
 - [Source-level channel and execution audit](docs/channel_validity_audit.md)
@@ -41,7 +41,7 @@ The additive `historical_audit/` module prepares three complete pinned auction r
 - `python -m historical_audit.prepare --help`: prepare factual tables and the frozen request batch offline.
 - `python -m historical_audit.codex_batch --help`: repeat the frozen packets using authenticated Codex CLI; inference requires explicit `--execute`.
 - `python -m historical_audit.judge --prepared /path/to/prepared`: optional alternative-provider preview, not used for the Luna pilot.
-- `python -m historical_audit.summarise --help`: join validated outputs to round facts, without fitting a rule or inventing reference labels.
+- `python -m historical_audit.summarise --help`: join basic-checked outputs to round facts, without fitting a rule or inventing reference labels.
 - `python -m unittest discover -s historical_audit/tests -v`: inference-free integrity tests.
 
 The existing fit/evaluate scripts and synthetic results are unchanged. Raw source logs and prepared requests belong in an external local cache, not Git. Intention/participation scores are not automatically equivalent to the original talk/behaviour placeholders, and the complete-run pilot is not a held-out accuracy study.

@@ -51,5 +51,7 @@
     "max_conservative_context_budget": 165948
   },
   "raw_artifacts_in_git": false,
-  "independent_reference_labels": 0
+  "independent_reference_labels": 0,
+  "analysis_validation_mode": "basic_reanalysis",
+  "raw_model_outputs_modified": false
 }

@@ -274,6 +274,8 @@ def build(cache: Path, manifest_path: Path, output: Path) -> dict[str, Any]:
              for job in requests) + config["generation"]["num_predict"] + 1024}
     if summary["max_conservative_context_budget"] > config["generation"]["num_ctx"]:
         raise ValueError("Conservative context budget exceeds configured capacity; do not truncate evidence")
+    (output / "protocol.md").write_bytes(protocol_path.read_bytes())
+    (output / "pilot.json").write_bytes((PACKAGE / "pilot.json").read_bytes())
     (output / "preparation.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n")
     return summary
 
