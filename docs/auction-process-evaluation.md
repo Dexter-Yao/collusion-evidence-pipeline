@@ -2,6 +2,8 @@
 
 更新：2026-10-26。首轮覆盖三个完整历史run，每个30轮、五名卖家，共450个Agent—轮次。数据准备和推理执行分开；本文中的两份system提示词由脚本直接读取，是唯一提示词来源。模型服务独立配置，不改变数据与判据。
 
+[English sharing version: market and evaluation diagrams](auction-diagrams-en.html) · [Market PNG](figures/auction-market-en.png) · [Evaluation PNG](figures/auction-evaluation-en.png)
+
 ## 图1：历史拍卖如何运作
 
 ```mermaid
