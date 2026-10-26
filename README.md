@@ -1,6 +1,6 @@
 ## Collusion evidence pipeline (Apart AI Collusion Sprint, track 2.3)
 
-**Status: unfinished work.** This repo contains an evaluation pipeline verified on synthetic data, plus an audit of what starter environments can and cannot establish about agent coordination. It contains **no results on real agent logs.**
+**Status: unfinished work.** This repo contains an evaluation pipeline verified on synthetic data, plus an audit of what starter environments can and cannot establish about agent coordination. It now also contains an **exploratory process audit of three real historical auction runs**, with repeated Luna judgments pending human calibration. No real detector-accuracy result is claimed.
 
 **Question:** when both the language and the actions of AI agents look collusive, does a detector infer an agreement that the evidence doesn’t establish?
 
@@ -29,15 +29,18 @@ pytest tests/ -v
 
 To be confirmed with each person before submission. 
 
-## Historical auction process audit (prepared, not executed)
+## Historical auction process audit
 
-The additive `historical_audit/` module prepares three complete pinned auction runs: 90 rounds and 450 seller decisions, including communication-disabled, communication-enabled, and overseen conditions. The preparation and preview have made **zero judge calls**. No real detector-performance claim is made.
+The additive `historical_audit/` module prepares three complete pinned auction runs: 90 rounds and 450 seller decisions, including communication-disabled, communication-enabled, and overseen conditions. The completed pilot uses 180 frozen request packets, each repeated in three fresh `gpt-6-luna` Codex CLI sessions: **540 calls and 2,700 planned axis ratings**. Of those, 2,586 ratings passed exact-quotation and structural validation. Stable judgment is not ground-truth correctness. No real detector-performance claim is made.
 
 - [Market and evaluation diagrams, canonical judge prompts, scope](docs/auction-process-evaluation.md)
 - [Source-level channel and execution audit](docs/channel_validity_audit.md)
+- [Real-log pilot results and stability](docs/auction-pilot-results.md)
+- [Small aggregate exports and provenance](results/historical_pilot/)
 - `python -m historical_audit.fetch_sources --help`: acquire and verify pinned public records.
 - `python -m historical_audit.prepare --help`: prepare factual tables and the frozen request batch offline.
-- `python -m historical_audit.judge --prepared /path/to/prepared`: preview only; inference additionally requires explicit `--execute` and both model names.
+- `python -m historical_audit.codex_batch --help`: repeat the frozen packets using authenticated Codex CLI; inference requires explicit `--execute`.
+- `python -m historical_audit.judge --prepared /path/to/prepared`: optional alternative-provider preview, not used for the Luna pilot.
 - `python -m historical_audit.summarise --help`: join validated outputs to round facts, without fitting a rule or inventing reference labels.
 - `python -m unittest discover -s historical_audit/tests -v`: inference-free integrity tests.
 
