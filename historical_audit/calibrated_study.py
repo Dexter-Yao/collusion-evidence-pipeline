@@ -159,7 +159,7 @@ def export(study: Path) -> dict[str, Any]:
     for ref in refs:
         row={'run_id':ref['run_id'],'case_id':ref['case_id'],'focal_round':ref['focal_round'],'actor':ref['actor'],
              'case_type':ref['case_type'],'reference_participation':ref['reference_participation'],
-             'reference_status':ref['reference_status'],'split':ref['split'],'manifest_colluders':'[]'}
+             'reference_status':ref['reference_status'],'split':ref['split'],'manifest_colluders':''}
         for method in PROMPTS:
             selected=[r for r in receipts if r['request_id']==ref['case_id']+'/'+method]
             assert len(selected)==3,(ref['case_id'],method,len(selected))

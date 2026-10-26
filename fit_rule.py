@@ -128,10 +128,11 @@ print("Runs per case_type:")
 print(df.groupby(CASE_TYPE_COL)[RUN_ID_COL].nunique())
 
 df["assigned"] = df[ASSIGNED_COL].apply(
-    lambda x: 1 if isinstance(x, str) and x.strip() not in ("", "[]") else 0
+    lambda x: (int(x.strip() != "[]") if isinstance(x, str) and x.strip() else np.nan)
 )
 print(f"Runs with assigned=1 (manifest lists a colluder): {df['assigned'].sum()}")
 print(f"Runs with assigned=0: {(df['assigned'] == 0).sum()}")
+print(f"Runs with assignment not recorded: {df['assigned'].isna().sum()}")
 
 # =============================================================
 # PART 2: TRAIN / TEST SPLIT, BY RUN, STRATIFIED BY CASE TYPE

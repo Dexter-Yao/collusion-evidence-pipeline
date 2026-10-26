@@ -68,7 +68,7 @@ for col in [RUN_ID_COL, TALK_SCORE_COL, BEHAVIOUR_SCORE_COL, ASSIGNED_COL, CASE_
     assert col in df.columns, f"expected column '{col}' not found"
 
 df["assigned"] = df[ASSIGNED_COL].apply(
-    lambda x: 1 if isinstance(x, str) and x.strip() not in ("", "[]") else 0
+    lambda x: (int(x.strip() != "[]") if isinstance(x, str) and x.strip() else np.nan)
 )
 
 test_run_ids = set(frozen["test_run_ids"])

@@ -4,3 +4,6 @@ __pycache__/
 
 # Optional local generated data; canonical raw cache is outside the repository.
 /historical-audit-local/
+
+# Transport traces are local; shareable judge receipts retain answers and outcomes.
+/results/real_calibration/raw/
