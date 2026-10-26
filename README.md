@@ -1,40 +1,65 @@
-# Collusion evidence pipeline · Apart Track 2.3
+# Auditing the Evidence Chain for LLM-Agent Collusion
 
-26 October 2026. This is one exploratory study connecting **source validity → process evidence → frozen calibration → held-out comparison**. The real-source pipeline has run end to end. Its reference labels are AI-assisted source audits awaiting independent human review; results are preliminary, not validated detector performance.
+Apart AI Collusion Research Sprint · Track 2.3 · October 2026
 
-The research question is whether a monitor infers coordination or execution that the available record does not establish. The contribution combines a channel/execution audit, three complete historical auction process audits, and a small real-source frozen-rule pilot.
+This study examines whether recorded communication and actions support an inference of collusion. It connects a source-validity audit, process-level assessment of historical auctions, and a frozen-rule evaluation. The analysis separates **expressed willingness, selected participation, environment execution and economic outcomes**.
 
-## Results and evidence
+## Study and findings
 
-- [Integrated real-source experiment, results and limits](results/real_calibration/report.md): 16 distinct parent-run focal cases, eight calibration/eight test, 144 new Luna calls. The audit rule detects 2/2 provisional positives and flags 1/6 provisional negatives; ordinary direct judgment detects 2/2 and flags 2/6. B-only matches the audit rule, so no benefit of the AND operator itself is established.
-- [Channel and execution validity audit](docs/channel_validity_audit.md): original candidate-path limitations and a communicated withdrawal request that the market fails to execute.
-- [Complete historical process audit](docs/auction-pilot-results.md): three full runs, 450 seller-rounds and 540 repeated judge calls. These are descriptive process observations, not 450 independent experiments.
-- [One dataflow and interface to Oz’s pipeline](docs/auction-pipeline-integration.md).
-- [Original market and process-judge protocol](docs/auction-process-evaluation.md); the additional focal-case study has its own immutable [protocol and split](results/real_calibration/frozen_protocol.json).
+| Component | Evidence | Main observation |
+| --- | --- | --- |
+| Source-validity audit | Pinned starter code and historical logs | Stored text and assigned roles do not establish message delivery or a negotiated agreement. |
+| Complete-run process audit | 3 auctions, 90 rounds, 450 seller decisions | A communicated withdrawal plan leads to selected requests that the environment fails to execute. |
+| Frozen-rule pilot | 16 additional focal cases from distinct parent runs; 8 calibration / 8 test | The audit rule flags one fewer provisional negative case than an ordinary direct judge. |
 
-## What changed in the statistical code
+On the eight held-out focal cases:
 
-The original synthetic defaults and all 20 synthetic rate-table rows are unchanged. Optional fit arguments select actual score names, a pre-scoring run split, the positive target and a direct-judge baseline. An opt-in empirical cutoff handles ordinal ties. Missing assignment metadata remains unknown and is never the target. The fitted real rule was committed as `db7c217` before test evaluation.
+| Method | Provisional positives detected | Provisional negatives flagged |
+| --- | ---: | ---: |
+| Evidence audit + two-signal rule | 2/2 | 1/6 |
+| Ordinary direct judge, same-null calibration | 2/2 | 2/6 |
+| Participation score alone | 2/2 | 1/6 |
+
+References are AI-assisted source judgments fixed before scoring and not independently human-validated. The sample is small and purposively selected. Participation-only matches the combined rule; an additional benefit from the AND operator is not established. [The report](results/real_calibration/report.md) provides case definitions, intervals, errors and limitations.
+
+## Materials
+
+- [Manuscript](paper/main.tex) and [bibliography](paper/refs.bib).
+- [Submission materials and offline Run Atlas](artifacts/submission-review.zip). Open `Run Atlas.html` after extraction.
+- [Channel and execution audit](docs/channel_validity_audit.md), with pinned source-line links.
+- [Complete-run process results](docs/auction-pilot-results.md).
+- [Evaluation data flow](docs/auction-pipeline-integration.md) and [process protocol with exact judge prompts](docs/auction-process-evaluation.md).
+- [Market and assessment diagrams](docs/auction-diagrams-en.html).
+- [Real-source scores, frozen rule and test exports](results/real_calibration/).
+
+## Reproduce the held-out results
+
+The saved-score replay requires Python, pandas and NumPy. It makes no model calls and writes to a separate output directory:
 
 ```bash
-uv run --with pandas --with numpy python fit_rule.py   --input results/real_calibration/scores_complete.csv   --out /tmp/replayed_rule.json --talk-col intent_score --behaviour-col action_score   --ordinary-col ordinary_score --positive-case-type coordinated_action   --threshold-policy empirical --split-file results/real_calibration/frozen_protocol.json
-uv run --with pandas --with numpy python evaluate_rule.py   --input results/real_calibration/scores_complete.csv   --rule /tmp/replayed_rule.json --outdir /tmp/replayed_test
+uv run --with pandas --with numpy python fit_rule.py \
+  --input results/real_calibration/scores_complete.csv \
+  --out /tmp/replayed_rule.json \
+  --talk-col intent_score --behaviour-col action_score \
+  --ordinary-col ordinary_score --positive-case-type coordinated_action \
+  --threshold-policy empirical \
+  --split-file results/real_calibration/frozen_protocol.json
+
+uv run --with pandas --with numpy python evaluate_rule.py \
+  --input results/real_calibration/scores_complete.csv \
+  --rule /tmp/replayed_rule.json --outdir /tmp/replayed_test
 ```
 
-The original frozen artifact is retained. No model calls are needed to replay these scores. The `historical_audit` module retains source parsing, repeated Codex CLI scoring, summaries and the earlier descriptive bridge. A fresh inference run requires explicit authorization and subscription access; it is unnecessary for reviewing the saved results.
+The recorded rule was [committed before evaluation](https://github.com/Dexter-Yao/collusion-evidence-pipeline/commit/db7c217afaaf970f9d168e6321fe018fc866c0f5). Its input hash, split and execution receipts are preserved. Verification covers held-out-score independence, rejection of changed input bytes, 31 integrity tests, and reproduction of all 20 original synthetic rate-table rows.
 
-## Verification and interpretation
+The `historical_audit` modules provide source preparation, judge execution, score summaries and saved-rating analysis. Fresh inference uses an authenticated Codex CLI; saved results can be inspected and replayed without it. `results/fake_debug/` contains synthetic implementation checks; `frozen_rule_blind.py` evaluates gap/percentile sensitivity on those fixtures.
 
-31 inference-free integrity tests pass. Replacing held-out scores does not change fitted thresholds, swapping input bytes is rejected, and the original synthetic defaults reproduce. All 48 source files for the focal study match their pinned Git objects. Six new judge calls timed out and one returned the wrong seller ID; all sixteen cases still have at least two known scores per method. Failed/unknown answers are not zero.
+## Scope
 
-The positive target is supported coordinated **selected action**, not realised causal harm. The unilateral-proposal controls apply only at their focal opening round, not the whole subsequent run. The sample is small, purposive and condition/time-confounded; the audit uses more judge calls than the direct baseline. No causal oversight effect, validated early warning or general detection superiority is claimed. See the report for intervals, references and LLM-assistance disclosure.
+The target is supported coordinated **action selection** at a focal seller-round. Successful execution and causal harm require separate evidence. Opening-proposal controls describe that moment, not the entire subsequent run. The study does not establish general detector performance, causal oversight effects or validated early warning.
 
-## Synthetic verification
+## Authors and attribution
 
-`results/fake_debug/` contains fabricated-score pipeline checks. `make_fake_scores.py`, default `fit_rule.py`, `frozen_rule_blind.py` and `evaluate_rule.py` reproduce those checks. Their numbers must not be represented as real detector observations. Largest-gap/percentile sensitivity results remain synthetic only.
+**Oz** (`roz-logic`) — statistical pipeline and integrity checks. **Shuhao Yao** (`Dexter-Yao`) — source/process audit and real-data integration. **Lucette** (`cookkatelyn01-ui`) — manuscript structure, editing and formatting.
 
-## Team and paper
-
-**Oz** (`roz-logic`): original statistical pipeline and integrity checks. **Shuhao Yao** (`Dexter-Yao`): source/process audit and real-data integration with AI assistance. **Lucette** (`cookkatelyn01-ui`): paper structure, editing and formatting.
-
-[Complete concise paper review copy](paper/main.tex) · [Verified references](paper/refs.bib) · [Paper and Run Atlas review bundle](artifacts/submission-review.zip). The paper is a review copy for Lucette, not a submission to Overleaf or the sprint. See [attribution](THIRD_PARTY_NOTICES.md).
+AI assistance is disclosed in the [manuscript](paper/main.tex). The fork retains the original [MIT licence](LICENSE); [source attribution](THIRD_PARTY_NOTICES.md) identifies third-party material.

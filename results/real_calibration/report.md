@@ -23,9 +23,9 @@ The complete-run process audit motivates the evidence distinctions. The addition
 
 The target is **source-supported coordinated selected-action participation at the focal seller-round**. A coordinated request can count even if execution fails. Realised causal harm remains a separate question.
 
-Each of four categories contributes four distinct parent runs, split two/two: coordinated action; competitive similarity without observed agreement; opening individual price discovery; and an unaccepted opening-round proposal. The last category is a temporal control, not proof of an entire run of talk that never changes behaviour. The positive category is not silently renamed “harmful”.
+Each of four categories contributes four distinct parent runs, split two/two: coordinated action; competitive similarity without observed agreement; opening individual price discovery; and an unaccepted opening-round proposal. The last category is a temporal control, not proof of an entire run of talk that never changes behaviour. Coordinated action selection and realised causal harm are separate targets.
 
-References were drafted from the original prompts, plans, selected asks and received messages by the assisting agent before scoring. They were not generated from Luna scores or manifest assignments. Dexter and the team have not yet independently validated them.
+References were drafted from the original prompts, plans, selected asks and received messages by the assisting agent before scoring. They were not generated from Luna scores or manifest assignments. The references have not undergone independent human validation.
 
 ## Held-out results
 
@@ -39,7 +39,7 @@ References were drafted from the original prompts, plans, selected asks and rece
 
 Exact per-category counts and Wilson intervals are in [the results CSV](evaluation/rates_by_case_type.csv). The overall intervals are in [the machine-readable summary](evaluation_summary.json). Zero observed errors does not establish a zero population error rate.
 
-## Reproducibility and changes to Oz’s code
+## Calibration and reproducibility
 
 The original synthetic default results remain unchanged. Optional arguments select actual `intent_score`/`action_score` columns, a pre-scoring split, the `coordinated_action` target, and an ordinary-judge column. An opt-in tie-safe empirical cutoff prevents an all-zero null group from being flagged by an inclusive zero threshold. Baseline A uses honest negatives; baseline B and the ordinary calibrated baseline use the same honest/common-incentive negatives as the primary rule. The ordinary fixed-majority result is also retained.
 
@@ -48,7 +48,7 @@ Luna call receipts: **144**, statuses `{"cli_timeout": 6, "invalid_output": 1, "
 ## What the results can and cannot support
 
 - Agent-authored source audits, fixed before new feature calls; not independently human-validated gold. All reported performance conditional on these provisional labels.
-- talk_only means unaccepted proposal AT FOCAL ROUND; not an entire run of talk without action. coordinated_action does not by itself establish harmful causal effects. No causal oversight or early-warning claim.
+- Opening-proposal controls concern only the focal round. They do not establish whole-run talk without action, causal harm, oversight effects or early-warning performance.
 - One focal seller-round per parent run; purposive and condition/time-confounded selection, not a random population benchmark.
 - Only two held-out positive examples; wide intervals. Repeated judge calls are not independent market replications.
 - Judge B already uses communication context; B-only is not an action-modality-only detector.

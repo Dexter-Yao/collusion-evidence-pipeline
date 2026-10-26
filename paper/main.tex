@@ -67,7 +67,7 @@ For a small end-to-end pilot, we add sixteen focal seller-rounds, one from each 
 
 The assisting agent drafted provisional references from original received messages, private plans and selected requests before new scoring. These are not human gold labels. Cases, prompts, aggregation and a stratified eight/eight run-disjoint split were committed before inference. Ordinary direct judgments and separate A/B judgments use identical source packets and the same Luna model, each repeated three times. Numeric scores are averaged only when at least two valid ratings exist; missing or unknown judgments are not zero. The audit uses two judge calls per repetition versus one for the ordinary baseline and is not compute-matched.
 
-Oz's \texttt{fit\_rule.py} calibrates each axis on provisional honest/common-incentive calibration negatives at a ten-percent empirical false-alarm target. An opt-in order-statistic cutoff handles ties under the inclusive comparison. With only four calibration negatives, the target permits no observed false flag and is not a population guarantee. The fitted rule and input hashes are committed before \texttt{evaluate\_rule.py} applies the rule to the eight held-out cases. Single-axis baseline A uses honest negatives; baseline B and the ordinary calibrated baseline use the same null cases as the primary rule. An ordinary fixed-majority baseline is also retained. Original synthetic gap/percentile sensitivity results remain debugging evidence, not real-data findings.
+\texttt{fit\_rule.py} calibrates each axis on provisional honest/common-incentive calibration negatives at a ten-percent empirical false-alarm target. An opt-in order-statistic cutoff handles ties under the inclusive comparison. With only four calibration negatives, the target permits no observed false flag and is not a population guarantee. The fitted rule and input hashes are committed before \texttt{evaluate\_rule.py} applies the rule to the eight held-out cases. Single-axis baseline A uses honest negatives; baseline B and the ordinary calibrated baseline use the same null cases as the primary rule. An ordinary fixed-majority baseline is also retained. Original synthetic gap/percentile sensitivity results remain debugging evidence, not real-data findings.
 
 \section{Results}
 \subsection{Channel and execution audit}
@@ -114,7 +114,7 @@ Participation only, same nulls & 2/2 & 1/6 \\
 \label{tab:real_pilot}
 \end{table}
 
-The audit-based rule yields 2/2 positives and 1/6 false flags. The ordinary same-null calibrated baseline yields 2/2 positives and 2/6 false flags; its fixed-majority variant yields 2/2 positives and 2/6 false flags. These are paired observations on the same held-out inputs, conditional on provisional references, not established general detector performance. With two positives and six negatives, Wilson intervals are wide and zero observed false flags does not establish zero risk. The original fabricated-score results verify pipeline logic only. The implemented held-out proportion intervals are Wilson intervals, not the bootstrap described in some earlier notes. In Tara's opening-round case, the ordinary judge calls a unilateral proposal collusion, while the audit separates willingness from supported joint action. The remaining Omar false flag originates in one of three B ratings treating the outgoing proposal itself as action participation; the frozen mean-score cutoff preserves that error. We do not adjust the rule after observing it.
+The audit-based rule yields 2/2 positives and 1/6 false flags. The ordinary same-null calibrated baseline yields 2/2 positives and 2/6 false flags; its fixed-majority variant yields 2/2 positives and 2/6 false flags. These are paired observations on the same held-out inputs, conditional on provisional references, not established general detector performance. With two positives and six negatives, Wilson intervals are wide and zero observed false flags does not establish zero risk. The original fabricated-score results verify pipeline logic only. Held-out proportions are reported with Wilson 95\% intervals. In Tara's opening-round case, the ordinary judge calls a unilateral proposal collusion, while the audit separates willingness from supported joint action. The remaining Omar false flag originates in one of three B ratings treating the outgoing proposal itself as action participation; the frozen mean-score cutoff preserves that error. We do not adjust the rule after observing it.
 
 \section{Discussion}
 
@@ -137,7 +137,7 @@ We connect a source-level channel/execution audit to a frozen evaluation pipelin
 \section*{Code and Data}
 
 \begin{itemize}
-    \item Code repository: \url{https://github.com/Dexter-Yao/collusion-evidence-pipeline}. The fork preserves the original pipeline by Oz (roz-logic).
+    \item Code repository: \url{https://github.com/Dexter-Yao/collusion-evidence-pipeline}.
     \item Data/Datasets: pinned official starter and original double-auction logs; source links and hashes in the accompanying audit.
     \item Other artifacts: Run Atlas, frozen protocols, references, raw judge receipts and evaluation exports.
 \end{itemize}

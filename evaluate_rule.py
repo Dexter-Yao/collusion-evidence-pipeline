@@ -1,13 +1,7 @@
 # evaluate_rule.py
-# Collusion detection: EVALUATE step only. Reads frozen_rule.json,
-# which should already be git committed (see fit_rule.py's printed
-# instruction), loads the same raw data, verifies it matches the file
-# fit_rule.py calibrated on via sha256 hash, filters to the
-# test_run_ids recorded in frozen_rule.json, classifies, sanity
-# cross-checks, evaluates primary rule against both single-axis
-# baseline variants, bootstraps CIs overall and per case type.
-# Contains no calibration logic at all, deliberately, that's the
-# whole point of splitting this out of fit_rule.py.
+# ABOUTME: Apply a committed frozen rule to hash-matched held-out data.
+# Reports primary and single-axis flags with Wilson binomial intervals.
+# Calibration is confined to fit_rule.py.
 
 # Python version: 3.14.4
 # Required packages: pandas, numpy
@@ -152,18 +146,13 @@ print("\n--- Baseline variant B: same nulls as primary rule (same label info) --
 talk_flag_b = score_single_axis(test, TALK_SCORE_COL, frozen["talk_baseline_b_threshold"], frozen["talk_higher_is_suspicious"], "talk, variant B")
 behav_flag_b = score_single_axis(test, BEHAVIOUR_SCORE_COL, frozen["behaviour_baseline_b_threshold"], frozen["behaviour_higher_is_suspicious"], "behaviour, variant B")
 
-print("\nExpectation to check against: talk-only baselines should wrongly flag")
-print("talk_only runs, behaviour-only variant A should wrongly flag")
-print("common_incentives runs (variant B, by construction, should not,")
-print("since it's calibrated with the same trap-case knowledge as the")
-print("primary rule, that's the asymmetry being made visible here, not")
-print("something to hide).")
+print("\nBaseline A uses honest-only nulls; baseline B uses the primary rule's nulls.")
+print("The observed case-type counts determine each method's trade-off.")
 
 # =============================================================
 # PART 5: RATES BY CASE TYPE WITH WILSON 95% INTERVALS, SAVED TO CSV
 # =============================================================
-# Runs are treated as independent (one row per run). With 5 test runs per
-# case type the intervals are wide, and 0 of 5 has an upper bound of ~0.43.
+# Intervals use one row per parent run and can be wide for small groups.
 # Stop if there are repeated run IDs: row-level Wilson intervals would
 # otherwise incorrectly treat rows from the same run as independent.
 

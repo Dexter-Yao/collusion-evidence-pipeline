@@ -11,26 +11,9 @@
 # Python version: 3.14.4
 # Required packages: pandas, numpy
 
-# DECISIONS LOG (decision, reason, date)
-# - primary thresholds: null-calibrated at 10% false-alarm rate on known
-#   negative case types, chosen before seeing real data. 2026-10-25
-# - direction decided from detector documentation (config), not computed
-#   from any label, previous version inferred direction from assigned,
-#   which is a form of leakage even though it wasn't used to set the
-#   threshold value itself. 2026-10-25
-# - case_label b_tacit renamed to b_parallel_behaviour: "behaviour
-#   without talk" is literally case two's own definition. 2026-10-25
-# - split stratified by case_type, own rng separate from evaluate_rule.py's
-#   bootstrap rng, so the split can't silently depend on draw order. 2026-10-25
-# - fit and evaluate split into two files, specifically so the freeze is
-#   git-commit-checkable, not just a printed warning. 2026-10-25
-# - baseline thresholds now reported as two variants, A (honest only,
-#   naive) and B (same nulls as primary), since giving the primary rule
-#   trap-case knowledge the baseline doesn't have makes any comparison
-#   using only variant A look better than it fairly should, both are
-#   now reported so that asymmetry is visible, not hidden. 2026-10-25
-# - input file hash stored in frozen_rule.json, checked by evaluate_rule.py,
-#   so the data can't be silently swapped between fit and evaluate. 2026-10-25
+# Calibration uses predefined score directions and run-disjoint data.
+# Baseline A uses honest cases; baseline B uses the same nulls as the
+# primary rule. The frozen artifact binds input bytes and held-out IDs.
 
 import pandas as pd
 import numpy as np
@@ -39,7 +22,7 @@ import hashlib
 import argparse
 
 # -----------------------------------------------------------
-# CONFIG: change these once teammates confirm the real mapping
+# CONFIG: default synthetic columns; real-score mappings are CLI arguments
 # -----------------------------------------------------------
 
 def parse_args():
@@ -59,29 +42,20 @@ args = parse_args()
 INPUT_PATH = args.input
 OUT_PATH = args.out
 
-# placeholder column names below, these are NOT confirmed yet,
-# Dexter's rubric decides which detector actually operationalises
-# each axis, Muhammad's export decides what columns exist at all.
-# flagging specifically: cross_run_mi sounds like it measures
-# dependence between runs' actions, which reads more like a behaviour
-# signal than a talk signal, this mapping needs checking against
-# Dexter's actual rubric before we trust it.
-TALK_SCORE_COL = args.talk_col        # placeholder for the SAY axis
-BEHAVIOUR_SCORE_COL = args.behaviour_col  # placeholder for the DO axis
+# Synthetic defaults are retained for fixture reproduction. Actual score
+# semantics and the positive target are selected explicitly through CLI.
+TALK_SCORE_COL = args.talk_col
+BEHAVIOUR_SCORE_COL = args.behaviour_col
 RUN_ID_COL = "run_id"
-ASSIGNED_COL = "manifest_colluders"    # list-like or empty, condition label only
-CASE_TYPE_COL = "case_type"            # harmful, common_incentives, talk_only, honest
-                                        # does not exist in real data yet, needs
-                                        # confirming with Dexter whether his case
-                                        # construction naturally produces this
+ASSIGNED_COL = "manifest_colluders"  # arrangement metadata; never the target
+CASE_TYPE_COL = "case_type"         # source-reference category
 
-NULL_TYPES = ["honest", "common_incentives"]  # known negatives by design, for the PRIMARY rule
+NULL_TYPES = ["honest", "common_incentives"]  # reference negative types for the primary rule
 TARGET_FPR = 0.10
 
 # direction decided from what each detector is documented to measure,
 # BEFORE looking at any data, not computed from assigned or case_type.
-# placeholder until Dexter's rubric confirms what these detectors
-# actually measure, True meaning higher score = more suspicious.
+# True means a larger score provides stronger evidence for the axis.
 DIRECTION = {
     TALK_SCORE_COL: True,
     BEHAVIOUR_SCORE_COL: True,
@@ -112,7 +86,7 @@ expected_case_types = {args.positive_case_type, "common_incentives", "talk_only"
 actual_case_types = set(df[CASE_TYPE_COL].unique())
 assert actual_case_types <= expected_case_types, (
     f"unexpected case_type values: {actual_case_types - expected_case_types}, "
-    f"stop and check with Dexter before continuing"
+    f"check the reference categories and --positive-case-type"
 )
 print("\u2713 case_type values match expected set")
 
@@ -138,15 +112,12 @@ print(f"Runs with assignment not recorded: {df['assigned'].isna().sum()}")
 # PART 2: TRAIN / TEST SPLIT, BY RUN, STRATIFIED BY CASE TYPE
 # =============================================================
 # Splitting by run_id, not by row, so no run leaks information
-# across the split, same discipline as keeping a forecaster's
-# full history together rather than splitting mid-history (one of my recent projects)
+# across the split.
 #
 # stratified by case_type, since a flat shuffle with roughly 10 runs
 # per case type could plausibly put most or all of one case type
-# entirely on one side, which would make null calibration meaningless
-# for that run of the script. uses its own rng, separate from
-# evaluate_rule.py's bootstrap rng, so the split doesn't depend on
-# when or whether that script's bootstrap runs.
+# entirely on one side. A dedicated random generator keeps the split
+# reproducible independently of evaluation operations.
 
 split_rng = np.random.default_rng(SEED)
 
