@@ -105,11 +105,24 @@ def describe(rows: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def run_bridge(analysis: Path, kernel_path: Path, output: Path) -> dict[str, Any]:
+def run_bridge(analysis: Path, kernel_path: Path, output: Path, round_facts_path: Path | None = None) -> dict[str, Any]:
     """Export all saved repeats and unique-unit consensus through Oz's pure kernel."""
     source = analysis / "seller_round_stability.csv"
     with source.open(encoding="utf-8-sig") as handle:
         units = list(csv.DictReader(handle))
+    run_source = analysis / "run_assessments.csv"
+    with run_source.open(encoding="utf-8-sig") as handle:
+        run_facts = list(csv.DictReader(handle))
+    run_index = {row["run_id"]: row for row in run_facts}
+    if len(run_index) != len(run_facts) or set(run_index) != {row["run_id"] for row in units}:
+        raise ValueError("Run facts must match the score units exactly, without duplicates")
+    round_facts = []
+    if round_facts_path is not None:
+        with round_facts_path.open(encoding="utf-8-sig") as handle:
+            round_facts = list(csv.DictReader(handle))
+        round_keys = {(row["run_id"], int(row["round"])) for row in round_facts}
+        if len(round_keys) != len(round_facts) or round_keys != {(row["run_id"], int(row["round"])) for row in units}:
+            raise ValueError("Round facts must match the score units exactly, without duplicates")
     kernel = load_kernel(kernel_path)
     repeated, collapsed, seen = [], [], set()
     for unit in units:
@@ -125,9 +138,19 @@ def run_bridge(analysis: Path, kernel_path: Path, output: Path) -> dict[str, Any
         collapsed.append({**base, "intent_score": consensus(willingness),
                           "action_participation": consensus(action)})
     repeated, collapsed = apply_scores(repeated, kernel), apply_scores(collapsed, kernel)
+    integrated_units = []
+    for facts, classified in zip(units, collapsed, strict=True):
+        row = {key: value for key, value in facts.items()
+               if key not in {"intent_score", "action_participation"}}
+        row.update(consensus_willingness_present=classified["intent_score"],
+                   consensus_selected_participation=classified["action_participation"],
+                   raw_oz_label=classified["raw_oz_label"],
+                   process_category=classified["process_category"])
+        integrated_units.append(row)
     output.mkdir(parents=True, exist_ok=True)
     write_csv(output / "repeated_classifications.csv", repeated)
     write_csv(output / "consensus_classifications.csv", collapsed)
+    write_csv(output / "integrated_seller_rounds.csv", integrated_units)
     run_rows = []
     for run_id in sorted({row["run_id"] for row in collapsed}):
         selected = [row for row in collapsed if row["run_id"] == run_id]
@@ -136,10 +159,32 @@ def run_bridge(analysis: Path, kernel_path: Path, output: Path) -> dict[str, Any
                          **{category: counts[category] for category in [*CATEGORIES.values(), "unresolved"]},
                          "independent_reference_available": False})
     write_csv(output / "run_process_summary.csv", run_rows)
+    integrated_runs = []
+    for row in run_rows:
+        joined = dict(run_index[row["run_id"]])
+        joined.update({"consensus_" + key: value for key, value in row.items()
+                       if key not in {"run_id", "independent_reference_available"}})
+        integrated_runs.append(joined)
+    write_csv(output / "integrated_runs.csv", integrated_runs)
+    integrated_rounds = []
+    for facts in round_facts:
+        selected = [row for row in collapsed if row["run_id"] == facts["run_id"]
+                    and int(row["round"]) == int(facts["round"])]
+        counts = Counter(row["process_category"] for row in selected)
+        integrated_rounds.append({**facts, "consensus_seller_units": len(selected),
+                                  **{"consensus_" + category: counts[category]
+                                     for category in [*CATEGORIES.values(), "unresolved"]}})
+    if integrated_rounds:
+        write_csv(output / "integrated_rounds.csv", integrated_rounds)
     summary = {
         "scope": "descriptive classification only; no fit, reference labels or accuracy",
         "kernel_sha256": hashlib.sha256(kernel_path.read_bytes()).hexdigest(),
         "input_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+        "run_facts_sha256": hashlib.sha256(run_source.read_bytes()).hexdigest(),
+        "integrated_seller_round_rows": len(integrated_units),
+        "integrated_run_rows": len(integrated_runs),
+        "integrated_round_rows": len(integrated_rounds),
+        "round_facts_sha256": hashlib.sha256(round_facts_path.read_bytes()).hexdigest() if round_facts_path else None,
         "thresholds": {"expressed_willingness": 1, "selected_participation": 1,
                        "basis": "predefined approved ordinal rubric, not fitted on data"},
         "repeated_ratings": describe(repeated), "unique_unit_consensus": describe(collapsed),
@@ -160,8 +205,9 @@ def main() -> None:
     parser.add_argument("--analysis", type=Path, required=True)
     parser.add_argument("--kernel", type=Path, default=Path(__file__).resolve().parents[1] / "evaluate_rule.py")
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--round-facts", type=Path, help="optional prepared round facts for the full economic/process join")
     args = parser.parse_args()
-    print(json.dumps(run_bridge(args.analysis, args.kernel, args.output), indent=2))
+    print(json.dumps(run_bridge(args.analysis, args.kernel, args.output, args.round_facts), indent=2))
 
 
 if __name__ == "__main__":

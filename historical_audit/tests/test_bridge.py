@@ -1,8 +1,10 @@
 """ABOUTME: Protect unknown handling and ordinal semantics in the additive bridge."""
 from pathlib import Path
+import csv
+import tempfile
 import unittest
 
-from historical_audit.oz_bridge import apply_scores, consensus, describe, load_kernel, parse_scores
+from historical_audit.oz_bridge import apply_scores, consensus, describe, load_kernel, parse_scores, run_bridge
 
 
 class BridgeTests(unittest.TestCase):
@@ -36,6 +38,29 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(summary["known_both_axes"], 1)
         self.assertEqual(summary["known_participation_axis"], 2)
         self.assertEqual(summary["additional_unresolved_vs_participation_only"], 1)
+
+    def test_fact_join_retains_scores_execution_and_empty_reference(self) -> None:
+        kernel = Path(__file__).resolve().parents[2] / "evaluate_rule.py"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "seller_round_stability.csv").write_text(
+                'run_id,round,agent_id,intent_scores,action_scores,execution_status,human_reference\n'
+                'run,1,seller,"[1, 2, 1]","[1, 1, 1]",withdrawal_not_executed_order_observed,\n')
+            (root / "run_assessments.csv").write_text('run_id,buyer_surplus,case_type\nrun,10,\n')
+            (root / "round_facts.csv").write_text('run_id,round,buyer_surplus\nrun,1,10\n')
+            summary = run_bridge(root, kernel, root / "out", root / "round_facts.csv")
+            with (root / "out/integrated_seller_rounds.csv").open(encoding="utf-8-sig") as handle:
+                rows = list(csv.DictReader(handle))
+            self.assertEqual(summary["integrated_seller_round_rows"], 1)
+            self.assertEqual(summary["integrated_round_rows"], 1)
+            self.assertEqual(rows[0]["intent_scores"], "[1, 2, 1]")
+            self.assertEqual(rows[0]["consensus_willingness_present"], "1")
+            self.assertEqual(rows[0]["execution_status"], "withdrawal_not_executed_order_observed")
+            self.assertEqual(rows[0]["human_reference"], "")
+            (root / "run_assessments.csv").write_text('run_id,buyer_surplus,case_type\nother,10,\n')
+            with self.assertRaises(ValueError):
+                run_bridge(root, kernel, root / "bad-output")
+            self.assertFalse((root / "bad-output").exists())
 
 
 if __name__ == "__main__":

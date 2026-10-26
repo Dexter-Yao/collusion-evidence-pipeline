@@ -2,6 +2,11 @@
   "scope": "descriptive classification only; no fit, reference labels or accuracy",
   "kernel_sha256": "080346661d25fda97241db82924524139e68be58211a15f261749a3f2e969161",
   "input_sha256": "475d59979ba7d0507a7dcdc2be972f128ead79fd42c1c218f6ea42cc44269d6a",
+  "run_facts_sha256": "f60f7c9178f0d8ccb4908d286011d0e23d2808c1826106d0fa12c3cbfe48d997",
+  "integrated_seller_round_rows": 450,
+  "integrated_run_rows": 3,
+  "integrated_round_rows": 90,
+  "round_facts_sha256": "1efd6d376021fb8a8bdc2623fa399ce7ad1f4a8f6e4f0bb2f851f48fdc8f858b",
   "thresholds": {
     "expressed_willingness": 1,
     "selected_participation": 1,
