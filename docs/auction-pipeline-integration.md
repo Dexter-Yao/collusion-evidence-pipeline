@@ -1,14 +1,11 @@
 # Connecting the historical audit to Oz’s pipeline
 
-26 October 2026. This note covers the existing synthetic-data pipeline and the completed Luna audit of three historical auction runs.
+26 October 2026. The saved Luna ratings have now been passed through Oz’s unchanged classification functions. No new model calls were made.
 
-**For this submission, the two components can sit together without changing the statistical code:**
+**Completed:** an additive adapter uses the approved A>=1/B>=1 rubric boundaries, retaining unknowns. It processes all 1,350 repeat-indexed pairs and summarizes all 450 unique seller-rounds; 402 have unanimous known binary judgments and 48 remain unresolved. The AND flag equals participation-only on the common known units. This is not an independent modality comparison: Judge B already uses communication context.
 
-- Use the [channel-validity audit](channel_validity_audit.md) as the source-linked empirical finding: whether peer messages reached agent inputs, whether actions were model-selected, and whether selected requests were executed. Run Atlas makes the underlying records inspectable.
-- Report the [historical pilot](auction-pilot-results.md) as descriptive process analysis and judge repeatability. Keep Oz’s synthetic-data verification explicitly separate; it remains a test of pipeline logic.
+The [results](../results/luna_bridge/summary.json) join by `run_id`, round and seller. Use them as descriptive support for the [channel-validity audit](channel_validity_audit.md) and Run Atlas.
 
-The [run-level export](../results/historical_pilot/run_assessments.csv) connects by `run_id`. It includes `channel_delivered`, `actions_agent_chosen`, execution discrepancies and aggregate judgments. These can support the audit table and cross-tabulation without modifying `fit_rule.py` or `evaluate_rule.py`.
+**Not completed on real data:** threshold fitting and detector-performance evaluation. Independent `case_type` labels are unavailable; willingness is not necessarily delivered talk, and participation is not realised harm. Do not invent labels or rename these scores as `cross_run_mi` / `welfare_shift`.
 
-**The three real runs are not yet inputs for detector-performance evaluation.** Expressed willingness is not automatically the pipeline’s talk score; selected participation is not realised harm. Independent `case_type` labels and a designated-colluder reference are not available. Do not invent them or substitute the new scores for `cross_run_mi` / `welfare_shift`.
-
-This lets the report include real evidence now while leaving the existing calibration, frozen-rule evaluation and synthetic results intact.
+The original synthetic fit/evaluate and sensitivity scripts were replayed successfully, separately from real data. Their code and source data remain unchanged. An ordinal-tie diagnostic identifies a calibration boundary to resolve before future real-score fitting, without changing the core scripts now.

@@ -40,6 +40,16 @@ Collapsing willingness 1 and 2 into expressed/not expressed gives **443/450** id
 
 Judge B was told about the null-handling distinction. Its output is not a blind rediscovery of that software issue, and no improved-versus-baseline judge experiment was performed. The source audit and observed order state establish the execution discrepancy; judge judgments remain open to human calibration.
 
+## Descriptive classification using Oz’s unchanged kernel
+
+The additive `historical_audit.oz_bridge` loads only the existing `oriented`/`classify` functions from `evaluate_rule.py`, avoiding its CLI side effects. Rubric-defined A>=1 and B>=1 boundaries are predefined, not fitted on these traces. Original classifier strings are mapped to observed signal combinations; they are not treated as labels of actual agreement, tacit collusion, competition or harm.
+
+All 1,350 repeat-indexed pairs are retained: 1,320 have both scores known, with 394 both-positive, 59 willingness-only, 867 neither and zero action-only; 30 are unresolved. A unique-unit summary requires all three known binary-presence scores to agree on each axis. Across 450 units, 402 are jointly known: 124 both-positive, 13 willingness-only, 265 neither and zero action-only; 48 remain unresolved.
+
+The AND flag and B-only flag agree on every common known pair and consensus unit. B alone has 407 known consensus units, so adding A leaves five additional units unresolved. **This is a descriptive comparison of derived flags, not a test of combining modalities. Judge B already reads communication context; B-only is not an actions-only baseline.** These are judgments without independent reference labels, not accuracy or false-positive estimates. Separate calls of the same model do not imply independent errors.
+
+The original synthetic pipeline and its held-out-score permutation test were also replayed without code changes; results match Oz’s reported counts. Largest-gap sensitivity yields 3/5 synthetic harmful flags; the 90th-percentile alternative yields 0/5. These constructed examples verify implementation and sensitivity, not real detector performance. [Complete bridge outputs](../results/luna_bridge/) include a separate synthetic replay summary and an ordinal-tie diagnostic. No full real-data recalibration was performed.
+
 ## Integration with Oz’s repository
 
 The primary handoff is [the channel-validity table with source lines](channel_validity_audit.md), followed by this real-log descriptive audit and [small aggregate exports](../results/historical_pilot/). Oz’s synthetic verification, fit/evaluate scripts and their results are unchanged.

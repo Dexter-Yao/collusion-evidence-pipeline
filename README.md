@@ -37,6 +37,7 @@ The additive `historical_audit/` module prepares three complete pinned auction r
 - [Source-level channel and execution audit](docs/channel_validity_audit.md)
 - [Real-log pilot results and stability](docs/auction-pilot-results.md)
 - [Small aggregate exports and provenance](results/historical_pilot/)
+- [Completed descriptive bridge to Oz’s unchanged classifier](results/luna_bridge/summary.json)
 - `python -m historical_audit.fetch_sources --help`: acquire and verify pinned public records.
 - `python -m historical_audit.prepare --help`: prepare factual tables and the frozen request batch offline.
 - `python -m historical_audit.codex_batch --help`: repeat the frozen packets using authenticated Codex CLI; inference requires explicit `--execute`.
@@ -45,3 +46,13 @@ The additive `historical_audit/` module prepares three complete pinned auction r
 - `python -m unittest discover -s historical_audit/tests -v`: inference-free integrity tests.
 
 The existing fit/evaluate scripts and synthetic results are unchanged. Raw source logs and prepared requests belong in an external local cache, not Git. Intention/participation scores are not automatically equivalent to the original talk/behaviour placeholders, and the complete-run pilot is not a held-out accuracy study.
+
+## Reproduce the saved-rating bridge (no inference)
+
+With the dependencies in `requirements.txt` installed:
+
+```bash
+uv run python -m historical_audit.oz_bridge --analysis /path/to/saved/analysis --output /path/to/bridge-results
+```
+
+This reuses the existing classification functions at the approved ordinal boundaries; it does not fit thresholds or fill reference labels. All 450 units are retained, including 48 unresolved after three-repeat binary consensus. It does not establish improved detection accuracy. Judge B already reads communication context, so B-only is not an actions-only baseline.
