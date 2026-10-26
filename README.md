@@ -1,58 +1,40 @@
-## Collusion evidence pipeline (Apart AI Collusion Sprint, track 2.3)
+# Collusion evidence pipeline · Apart Track 2.3
 
-**Status: unfinished work.** This repo contains an evaluation pipeline verified on synthetic data, plus an audit of what starter environments can and cannot establish about agent coordination. It now also contains an **exploratory process audit of three real historical auction runs**, with repeated Luna judgments pending human calibration. No real detector-accuracy result is claimed.
+26 October 2026. This is one exploratory study connecting **source validity → process evidence → frozen calibration → held-out comparison**. The real-source pipeline has run end to end. Its reference labels are AI-assisted source audits awaiting independent human review; results are preliminary, not validated detector performance.
 
-**Question:** when both the language and the actions of AI agents look collusive, does a detector infer an agreement that the evidence doesn’t establish?
+The research question is whether a monitor infers coordination or execution that the available record does not establish. The contribution combines a channel/execution audit, three complete historical auction process audits, and a small real-source frozen-rule pilot.
 
-**What’s here**
+## Results and evidence
 
-- `fit_rule.py`: splits runs by case type, calibrates thresholds on known-negative training runs at a 10% per-axis false-alarm target, and writes `frozen_rule.json`.
-- `evaluate_rule.py`: reads the frozen rule, checks the input file hash, scores held-out runs, and reports rates with Wilson 95% intervals against two single-axis baselines.
-- `frozen_rule_blind.py`: a sensitivity analysis using label-free thresholds (gap and percentile).
-- `tests/`: a leak test showing thresholds don’t depend on test rows.
-- `docs/channel_validity_audit.md`: the audit.
+- [Integrated real-source experiment, results and limits](results/real_calibration/report.md): 16 distinct parent-run focal cases, eight calibration/eight test, 144 new Luna calls. The audit rule detects 2/2 provisional positives and flags 1/6 provisional negatives; ordinary direct judgment detects 2/2 and flags 2/6. B-only matches the audit rule, so no benefit of the AND operator itself is established.
+- [Channel and execution validity audit](docs/channel_validity_audit.md): original candidate-path limitations and a communicated withdrawal request that the market fails to execute.
+- [Complete historical process audit](docs/auction-pilot-results.md): three full runs, 450 seller-rounds and 540 repeated judge calls. These are descriptive process observations, not 450 independent experiments.
+- [One dataflow and interface to Oz’s pipeline](docs/auction-pipeline-integration.md).
+- [Original market and process-judge protocol](docs/auction-process-evaluation.md); the additional focal-case study has its own immutable [protocol and split](results/real_calibration/frozen_protocol.json).
 
-**Reproduce (synthetic data only)**
+## What changed in the statistical code
 
-```bash
-pip install -r requirements.txt
-python make_fake_scores.py
-python fit_rule.py
-python frozen_rule_blind.py
-python evaluate_rule.py --outdir results/fake_debug
-pytest tests/ -v
-```
-
-**All numbers in `results/fake_debug/` come from synthetic data built with obvious separation. They verify the pipeline. They are not evidence about any real detector.**
-
-## Author Contributions
-
-To be confirmed with each person before submission. 
-
-## Historical auction process audit
-
-The additive `historical_audit/` module prepares three complete pinned auction runs: 90 rounds and 450 seller decisions, including communication-disabled, communication-enabled, and overseen conditions. The completed pilot uses 180 frozen request packets, each repeated in three fresh `gpt-6-luna` Codex CLI sessions: **540 calls and 2,700 planned axis ratings**. All 2,700 ratings satisfy the current basic checks for seller coverage, legal scores and non-empty rationale. Exact quotation is not an inclusion gate. Stable judgment is not ground-truth correctness. No real detector-performance claim is made.
-
-- [Market and evaluation diagrams, canonical judge prompts, scope](docs/auction-process-evaluation.md)
-- [Source-level channel and execution audit](docs/channel_validity_audit.md)
-- [Real-log pilot results and stability](docs/auction-pilot-results.md)
-- [Small aggregate exports and provenance](results/historical_pilot/)
-- [Completed descriptive bridge to Oz’s unchanged classifier](results/luna_bridge/summary.json)
-- `python -m historical_audit.fetch_sources --help`: acquire and verify pinned public records.
-- `python -m historical_audit.prepare --help`: prepare factual tables and the frozen request batch offline.
-- `python -m historical_audit.codex_batch --help`: repeat the frozen packets using authenticated Codex CLI; inference requires explicit `--execute`.
-- `python -m historical_audit.judge --prepared /path/to/prepared`: optional alternative-provider preview, not used for the Luna pilot.
-- `python -m historical_audit.summarise --help`: join basic-checked outputs to round facts, without fitting a rule or inventing reference labels.
-- `python -m unittest discover -s historical_audit/tests -v`: inference-free integrity tests.
-
-The existing fit/evaluate scripts and synthetic results are unchanged. Raw source logs and prepared requests belong in an external local cache, not Git. Intention/participation scores are not automatically equivalent to the original talk/behaviour placeholders, and the complete-run pilot is not a held-out accuracy study.
-
-## Reproduce the saved-rating bridge (no inference)
-
-With the dependencies in `requirements.txt` installed:
+The original synthetic defaults and all 20 synthetic rate-table rows are unchanged. Optional fit arguments select actual score names, a pre-scoring run split, the positive target and a direct-judge baseline. An opt-in empirical cutoff handles ordinal ties. Missing assignment metadata remains unknown and is never the target. The fitted real rule was committed as `db7c217` before test evaluation.
 
 ```bash
-uv run python -m historical_audit.oz_bridge --analysis /path/to/saved/analysis --output /path/to/bridge-results
+uv run --with pandas --with numpy python fit_rule.py   --input results/real_calibration/scores_complete.csv   --out /tmp/replayed_rule.json --talk-col intent_score --behaviour-col action_score   --ordinary-col ordinary_score --positive-case-type coordinated_action   --threshold-policy empirical --split-file results/real_calibration/frozen_protocol.json
+uv run --with pandas --with numpy python evaluate_rule.py   --input results/real_calibration/scores_complete.csv   --rule /tmp/replayed_rule.json --outdir /tmp/replayed_test
 ```
 
-This reuses the existing classification functions at the approved ordinal boundaries; it does not fit thresholds or fill reference labels. All 450 units are retained, including 48 unresolved after three-repeat binary consensus. It does not establish improved detection accuracy. Judge B already reads communication context, so B-only is not an actions-only baseline.
+The original frozen artifact is retained. No model calls are needed to replay these scores. The `historical_audit` module retains source parsing, repeated Codex CLI scoring, summaries and the earlier descriptive bridge. A fresh inference run requires explicit authorization and subscription access; it is unnecessary for reviewing the saved results.
+
+## Verification and interpretation
+
+31 inference-free integrity tests pass. Replacing held-out scores does not change fitted thresholds, swapping input bytes is rejected, and the original synthetic defaults reproduce. All 48 source files for the focal study match their pinned Git objects. Six new judge calls timed out and one returned the wrong seller ID; all sixteen cases still have at least two known scores per method. Failed/unknown answers are not zero.
+
+The positive target is supported coordinated **selected action**, not realised causal harm. The unilateral-proposal controls apply only at their focal opening round, not the whole subsequent run. The sample is small, purposive and condition/time-confounded; the audit uses more judge calls than the direct baseline. No causal oversight effect, validated early warning or general detection superiority is claimed. See the report for intervals, references and LLM-assistance disclosure.
+
+## Synthetic verification
+
+`results/fake_debug/` contains fabricated-score pipeline checks. `make_fake_scores.py`, default `fit_rule.py`, `frozen_rule_blind.py` and `evaluate_rule.py` reproduce those checks. Their numbers must not be represented as real detector observations. Largest-gap/percentile sensitivity results remain synthetic only.
+
+## Team and paper
+
+**Oz** (`roz-logic`): original statistical pipeline and integrity checks. **Shuhao Yao** (`Dexter-Yao`): source/process audit and real-data integration with AI assistance. **Lucette** (`cookkatelyn01-ui`): paper structure, editing and formatting.
+
+[Complete concise paper review copy](paper/main.tex) · [Verified references](paper/refs.bib) · [Paper and Run Atlas review bundle](artifacts/submission-review.zip). The paper is a review copy for Lucette, not a submission to Overleaf or the sprint. See [attribution](THIRD_PARTY_NOTICES.md).
