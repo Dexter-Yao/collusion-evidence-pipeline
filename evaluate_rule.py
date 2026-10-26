@@ -44,6 +44,7 @@ RUN_ID_COL = frozen["run_id_col"]
 ASSIGNED_COL = frozen["assigned_col"]
 CASE_TYPE_COL = frozen["case_type_col"]
 SEED = frozen["seed"]
+POSITIVE_CASE_TYPE = frozen.get("positive_case_type", "harmful")
 
 print(f"Loaded frozen rule from {FROZEN_RULE_PATH}")
 print(f"talk_threshold = {frozen['talk_threshold']:.4f}, behaviour_threshold = {frozen['behaviour_threshold']:.4f}")
@@ -125,9 +126,9 @@ print(crosscheck)
 print("\nCrosstab, case_type (rows) vs rule output (columns):")
 print(pd.crosstab(test[CASE_TYPE_COL], test["case_label"]))
 
-is_harmful = test[CASE_TYPE_COL] == "harmful"
+is_harmful = test[CASE_TYPE_COL] == POSITIVE_CASE_TYPE
 detection_rate = test.loc[is_harmful, "flag"].mean() if is_harmful.any() else float("nan")
-print(f"\nDetection rate on harmful runs: {detection_rate:.3f}")
+print(f"\nDetection rate on {POSITIVE_CASE_TYPE} cases: {detection_rate:.3f}")
 
 false_flag_by_type = test.loc[~is_harmful].groupby(CASE_TYPE_COL)["flag"].mean()
 print("False-flag rate by non-harmful case_type:")
@@ -136,9 +137,9 @@ print(false_flag_by_type)
 def score_single_axis(data, score_col, threshold, higher_is_suspicious, label_name):
     s = oriented(data[score_col], higher_is_suspicious)
     flag = (s >= threshold).astype(int)
-    is_h = data[CASE_TYPE_COL] == "harmful"
+    is_h = data[CASE_TYPE_COL] == POSITIVE_CASE_TYPE
     print(f"\nBaseline ({label_name}), threshold {threshold:.4f}:")
-    print(f"  detection rate on harmful: {flag[is_h].mean():.3f}" if is_h.any() else "  no harmful runs in test")
+    print(f"  detection rate on {POSITIVE_CASE_TYPE}: {flag[is_h].mean():.3f}" if is_h.any() else "  no positive cases in test")
     print("  false-flag rate by case_type:")
     print(flag[~is_h].groupby(data.loc[~is_h, CASE_TYPE_COL]).mean())
     return flag
@@ -209,6 +210,15 @@ tables = pd.concat([
     rate_table(test, behav_flag_b, "behaviour only, baseline B"),
 ], ignore_index=True)
 
+if frozen.get("ordinary_score_col"):
+    ordinary = frozen["ordinary_score_col"]
+    assert test[ordinary].notna().all(), "ordinary baseline missing on test"
+    test["ordinary_calibrated_flag"] = (test[ordinary] >= frozen["ordinary_threshold"]).astype(int)
+    test["ordinary_fixed_flag"] = (test[ordinary] >= frozen["ordinary_fixed_threshold"]).astype(int)
+    tables = pd.concat([tables,
+        rate_table(test, test["ordinary_calibrated_flag"], "ordinary direct judge, same-null calibration"),
+        rate_table(test, test["ordinary_fixed_flag"], "ordinary direct judge, fixed majority")], ignore_index=True)
+
 print(tables.to_string(index=False))
 
 tables.to_csv(
@@ -221,4 +231,5 @@ pd.crosstab(
     test["case_label"],
 ).to_csv(os.path.join(OUTDIR, "crosstab_primary.csv"))
 
+test.to_csv(os.path.join(OUTDIR, "test_predictions.csv"), index=False)
 print("\nevaluate_rule.py complete.")
