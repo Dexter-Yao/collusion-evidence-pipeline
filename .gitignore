@@ -1,3 +1,6 @@
 
 __pycache__/
 .pytest_cache/
+
+# Optional local generated data; canonical raw cache is outside the repository.
+/historical-audit-local/

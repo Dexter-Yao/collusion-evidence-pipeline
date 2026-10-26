@@ -28,3 +28,17 @@ pytest tests/ -v
 ## Author Contributions
 
 To be confirmed with each person before submission. 
+
+## Historical auction process audit (prepared, not executed)
+
+The additive `historical_audit/` module prepares three complete pinned auction runs: 90 rounds and 450 seller decisions, including communication-disabled, communication-enabled, and overseen conditions. The preparation and preview have made **zero judge calls**. No real detector-performance claim is made.
+
+- [Market and evaluation diagrams, canonical judge prompts, scope](docs/auction-process-evaluation.md)
+- [Source-level channel and execution audit](docs/channel_validity_audit.md)
+- `python -m historical_audit.fetch_sources --help`: acquire and verify pinned public records.
+- `python -m historical_audit.prepare --help`: prepare factual tables and the frozen request batch offline.
+- `python -m historical_audit.judge --prepared /path/to/prepared`: preview only; inference additionally requires explicit `--execute` and both model names.
+- `python -m historical_audit.summarise --help`: join validated outputs to round facts, without fitting a rule or inventing reference labels.
+- `python -m unittest discover -s historical_audit/tests -v`: inference-free integrity tests.
+
+The existing fit/evaluate scripts and synthetic results are unchanged. Raw source logs and prepared requests belong in an external local cache, not Git. Intention/participation scores are not automatically equivalent to the original talk/behaviour placeholders, and the complete-run pilot is not a held-out accuracy study.
